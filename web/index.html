@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>合理用药知识审查平台</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">合理用药知识审查平台</div>
+  <nav class="tabs">
+    <button class="tab active" data-view="library">说明书库</button>
+    <button class="tab" data-view="items">抽取明细</button>
+    <button class="tab" data-view="graph">知识图谱</button>
+    <button class="tab" data-view="review">审核台</button>
+    <button class="tab" data-view="conflicts">冲突检查
+      <span id="conflict-badge" class="badge hidden">0</span></button>
+  </nav>
+  <div class="topbar-right">
+    <span id="review-summary" class="review-summary"></span>
+  </div>
+</header>
+
+<main>
+  <!-- 说明书库 -->
+  <section id="view-library" class="view active">
+    <div class="toolbar">
+      <input id="doc-search" class="input" placeholder="搜索通用名/编号/厂家">
+      <select id="doc-style" class="input">
+        <option value="">全部标题风格</option>
+        <option value="gb_bracket">国标【】式</option>
+        <option value="cn_number">中文编号式</option>
+        <option value="arabic_number">阿拉伯数字式</option>
+        <option value="plain_alt">无编号近义式</option>
+      </select>
+      <button id="doc-search-btn" class="btn">查询</button>
+      <span class="muted" id="doc-total"></span>
+    </div>
+    <table class="table">
+      <thead><tr>
+        <th>编号</th><th>通用名</th><th>厂家</th><th>文件</th>
+        <th>标题风格</th><th>知识条目</th><th>操作</th>
+      </tr></thead>
+      <tbody id="doc-tbody"></tbody>
+    </table>
+    <div class="pager">
+      <button class="btn" id="doc-prev">上一页</button>
+      <span id="doc-page" class="muted"></span>
+      <button class="btn" id="doc-next">下一页</button>
+    </div>
+  </section>
+
+  <!-- 抽取明细 -->
+  <section id="view-items" class="view">
+    <div class="toolbar">
+      <select id="item-type" class="input">
+        <option value="">全部类型</option>
+        <option value="interaction">相互作用</option>
+        <option value="dosage">剂量</option>
+        <option value="contraindication">禁忌</option>
+      </select>
+      <select id="item-status" class="input">
+        <option value="">全部状态</option>
+        <option value="pending">待审核</option>
+        <option value="approved">已通过</option>
+        <option value="rejected">已驳回</option>
+      </select>
+      <input id="item-doc" class="input" placeholder="按说明书编号过滤">
+      <button id="item-query" class="btn">查询</button>
+      <span class="muted" id="item-total"></span>
+    </div>
+    <div id="item-list" class="card-list"></div>
+    <div class="pager">
+      <button class="btn" id="item-prev">上一页</button>
+      <span id="item-page" class="muted"></span>
+      <button class="btn" id="item-next">下一页</button>
+    </div>
+  </section>
+
+  <!-- 知识图谱 -->
+  <section id="view-graph" class="view">
+    <div class="toolbar">
+      <label class="muted">严重程度筛选:</label>
+      <select id="graph-severity" class="input">
+        <option value="">全部</option>
+        <option value="禁忌">禁忌</option>
+        <option value="高">高</option>
+        <option value="中">中</option>
+        <option value="低">低</option>
+      </select>
+      <span class="muted" id="graph-stats"></span>
+      <span class="hint">圆点大小=关联药物数;颜色=严重程度(红禁忌/橙高/黄中/蓝低)</span>
+    </div>
+    <div class="graph-wrap">
+      <svg id="graph-svg" width="100%" height="620"></svg>
+    </div>
+  </section>
+
+  <!-- 审核台 -->
+  <section id="view-review" class="view">
+    <div class="toolbar">
+      <h3>待审核知识条目</h3>
+      <div class="spacer"></div>
+      <button id="approve-page" class="btn btn-primary">本页全部通过</button>
+      <button id="export-btn" class="btn btn-success">导出已审核知识</button>
+    </div>
+    <div id="review-stats-box" class="stats-grid"></div>
+    <div id="review-list" class="card-list"></div>
+    <div class="pager">
+      <button class="btn" id="review-prev">上一页</button>
+      <span id="review-page" class="muted"></span>
+      <button class="btn" id="review-next">下一页</button>
+    </div>
+    <pre id="export-result" class="export-box hidden"></pre>
+  </section>
+
+  <!-- 冲突检查 -->
+  <section id="view-conflicts" class="view">
+    <div class="toolbar">
+      <h3>说明书间矛盾说法</h3>
+      <label class="muted"><input type="checkbox" id="conflict-hide-resolved"> 隐藏已处理</label>
+    </div>
+    <table class="table">
+      <thead><tr>
+        <th>药物对</th><th>矛盾类型</th><th>说明书 A</th><th>说明书 B</th>
+        <th>说法对比</th><th>状态</th><th>操作</th>
+      </tr></thead>
+      <tbody id="conflict-tbody"></tbody>
+    </table>
+  </section>
+</main>
+
+<!-- 文档/原文高亮抽屉 -->
+<div id="drawer-mask" class="drawer-mask hidden"></div>
+<aside id="drawer" class="drawer hidden">
+  <div class="drawer-head">
+    <span id="drawer-title">原文出处</span>
+    <button id="drawer-close" class="btn">关闭</button>
+  </div>
+  <div id="drawer-meta" class="drawer-meta"></div>
+  <div id="drawer-body" class="drawer-body"></div>
+</aside>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
